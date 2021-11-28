@@ -2,6 +2,7 @@
 Converted to pytorch from https://github.com/tnwei/pure-keras-mdn
 """
 import torch
+import numpy as np
 
 
 class MDN(torch.nn.Module):
@@ -60,13 +61,13 @@ def mdn_likelihood_loss(y, pi, mu, sigma):
 
 def sample_mdn(pi, mu, sigma, n_points=10):
     """
-    Sample `n_points` from the distributions for each point in the test set
+    Sample `n_points` from the mixture of Gaussians
     """
-    n_test = pi.shape[0]
-    result = np.random.random(size=(n_test, n_points))
-    noise = np.random.random(size=(n_test, n_points))
+    n_samples, n_mixtures = pi.shape[0], pi.shape[1]
+    result = np.random.random(size=(n_samples, n_points))
+    noise = np.random.random(size=(n_samples, n_points))
 
-    for i in range(n_test):
+    for i in range(n_samples):
         for j in range(n_points):
             idx = np.random.choice(a=range(n_mixtures), p=pi[i])
             result[i, j] = mu[i, idx] + noise[i, j] * sigma[i, idx]
