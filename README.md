@@ -1,4 +1,4 @@
-# torchmdn (WIP)
+# torchmdn
 
 A simple module for Mixture Density Networks in Pytorch. 
 
@@ -53,6 +53,7 @@ opt = torch.optim.Adam(net.parameters())
 for i in range(10000):
     opt.zero_grad()
     pi, mu, sigma = net(X_train_ten)
+    # pi, mu, sigma have shape (n_samples, n_mixtures): (1600, 5)
     loss = mdn_likelihood_loss(y_train_ten, pi, mu, sigma)
     loss.backward()
     opt.step()
@@ -64,4 +65,17 @@ for i in range(10000):
 pi, mu, sigma = net(X_test_ten)
 pi, mu, sigma = pi.detach().numpy(), mu.detach().numpy(), sigma.detach().numpy()
 y_pred = sample_mdn(pi, mu, sigma, 10) # y_pred.shape = (400, 10)
+```
+
+## Bias init
+
+Specify priors for each Gaussian mixture during init:
+
+```python
+n_mixtures = 5
+
+# Initialize bias using any list / array / torch tensor with shape (n_mixtures, )
+# Defaults to None
+bias_init = [-7.5, -5, 1, 4, 8] 
+mdn = MDN(in_features=1, n_mixtures=n_mixtures, bias_init=bias_init)
 ```

@@ -3,11 +3,20 @@ Converted to pytorch from https://github.com/tnwei/pure-keras-mdn
 """
 import torch
 import numpy as np
+from typing import Optional
 
 
 class MDN(torch.nn.Module):
     """
     Defines a Mixture Density Network block comprising of `n_mixtures` of Gaussians.
+
+    Args
+    ----
+    + in_features: size of each input sample
+    + n_mixtures: number of Gaussian mixtures
+    + bias_init: If not None, will be used to initialize the bias. Must have same dims
+        as n_mixtures.
+            Defaults to None.
 
     Outputs pi, mu, sigma, where:
     + pi: mixture probability, sums to 1
@@ -15,16 +24,47 @@ class MDN(torch.nn.Module):
     + sigma: std dev of Gaussians
     """
 
-    def __init__(self, in_features: int, n_mixtures: int):
+    def __init__(
+        self,
+        in_features: int,
+        n_mixtures: int,
+        bias_init: Optional = None,
+        device: Optional[str] = None,
+        dtype: Optional = None,
+    ):
         super().__init__()
+        factory_kwargs = {"device": device, "dtype": dtype}
         self.w_pi = torch.nn.Linear(
-            in_features=in_features, out_features=n_mixtures, bias=True
+            in_features=in_features,
+            out_features=n_mixtures,
+            bias=True,
+            **factory_kwargs,
         )
         self.w_mu = torch.nn.Linear(
-            in_features=in_features, out_features=n_mixtures, bias=True
+            in_features=in_features,
+            out_features=n_mixtures,
+            bias=True,
+            **factory_kwargs,
         )
+
+        if bias_init is not None:
+            # ref: https://discuss.pytorch.org/t/fix-bias-and-weights-of-a-layer/75120/5
+            with torch.no_grad():
+                init_bias = torch.FloatTensor(bias_init, device=device)
+                assert (
+                    init_bias.size == self.w_mu.bias.size
+                ), f"init_bias shape is {init_bias.shape}, needs to be {self.w_mu.bias.size}"
+                self.w_mu.bias = torch.nn.parameter.Parameter(
+                    data=init_bias, requires_grad=True
+                )
+        else:
+            pass
+
         self.w_sigma = torch.nn.Linear(
-            in_features=in_features, out_features=n_mixtures, bias=True
+            in_features=in_features,
+            out_features=n_mixtures,
+            bias=True,
+            **factory_kwargs,
         )
 
     def forward(self, x):
