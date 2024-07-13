@@ -2,6 +2,8 @@
 
 A simple module for Mixture Density Networks in Pytorch. 
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tnwei/torchmdn/blob/main/example.ipynb)
+
 ## Example
 
 Install with `pip install git+https://github.com/tnwei/torchmdn`
